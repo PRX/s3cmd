@@ -14,6 +14,7 @@ from logging import debug, info, warning, error
 
 import os
 import glob
+import datetime
 
 __all__ = ["fetch_local_list", "fetch_remote_list", "compare_filelists", "filter_exclude_include"]
 
@@ -112,6 +113,7 @@ def fetch_local_list(args, recursive = None):
                     'full_name' : full_name,
                     'size' : sr.st_size,
                     'mtime' : sr.st_mtime,
+                    'timestamp' : sr.st_mtime,
                     ## TODO: Possibly more to save here...
                 }
         return loc_list, single_file
@@ -290,9 +292,18 @@ def compare_filelists(src_list, dst_list, src_remote, dst_remote):
                 continue
 
             attribs_match = True
+
             ## Check size first
             if 'size' in cfg.sync_checks and dst_list[file]['size'] != src_list[file]['size']:
                 debug(u"XFER: %s (size mismatch: src=%s dst=%s)" % (file, src_list[file]['size'], dst_list[file]['size']))
+                attribs_match = False
+
+            ## Check timestamp
+
+            if attribs_match and ('timestamp' in cfg.sync_checks) and (src_list[file]['timestamp'] > dst_list[file]['timestamp']):
+                src_t = datetime.datetime.fromtimestamp(src_list[file]['timestamp'])
+                dst_t = datetime.datetime.fromtimestamp(dst_list[file]['timestamp'])
+                debug(u"XFER: src timestamp newer than dst %s (src=%s(%s) > dst=%s(%s))" % (file, src_list[file]['timestamp'], src_t, dst_list[file]['timestamp'], dst_t))
                 attribs_match = False
 
             ## Check MD5
