@@ -6,6 +6,7 @@
 import os
 import sys
 import time
+import calendar
 import re
 import string
 import random
@@ -138,7 +139,8 @@ def dateS3toUnix(date):
     ## FIXME: This should be timezone-aware.
     ## Currently the argument to strptime() is GMT but mktime()
     ## treats it as "localtime". Anyway...
-    return time.mktime(dateS3toPython(date))
+    # return time.mktime(dateS3toPython(date))
+    return calendar.timegm(dateS3toPython(date))
 __all__.append("dateS3toUnix")
 
 def dateRFC822toPython(date):
